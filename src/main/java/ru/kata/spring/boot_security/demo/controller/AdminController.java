@@ -12,7 +12,7 @@ import java.security.Principal;
 import java.util.Set;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
 
     final UserService userService;
@@ -40,7 +40,7 @@ public class AdminController {
     @PostMapping("/new")
     public String addUser(@ModelAttribute User user, @RequestParam(value = "role") Set<Role> roles) {
         userService.save(userService.createUser(user, roles));
-        return "redirect:/admin/";
+        return "redirect:/api/admin/";
     }
 
     @PostMapping("/update")
@@ -48,13 +48,13 @@ public class AdminController {
                          @RequestParam(value = "role", required = false) Set<Role> roleNames,
                          @RequestParam(value = "id") long id) {
         userService.update(id, userService.updateUser(id, user, roleNames));
-        return "redirect:/admin/";
+        return "redirect:/api/admin/";
     }
 
     @PostMapping("/delete")
     public String delete(@RequestParam("id") long id) {
         userService.delete(id);
-        return "redirect:/admin/";
+        return "redirect:/api/admin/";
     }
 
     @GetMapping("/user")

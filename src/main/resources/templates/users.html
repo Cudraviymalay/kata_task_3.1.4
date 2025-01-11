@@ -36,9 +36,9 @@
         <div class="col-2 bg-light vh-100">
             <ul class="list-unstyled">
                 <div class="btn-group-vertical" role="group" aria-label="Basic example" style="width: 100%;">
-                    <a href="/admin" class="btn btn-primary active" role="button"
+                    <a href="/api/admin" class="btn btn-primary active" role="button"
                        style="background-color: #007BFF; border-color: #007BFF;">Admin</a>
-                    <a href="/user" class="btn btn-light" role="button">User</a>
+                    <a href="/api/user" class="btn btn-light" role="button">User</a>
                 </div>
             </ul>
         </div>
@@ -50,11 +50,12 @@
                 <!-- Tabs Navigation -->
                 <ul class="nav nav-tabs" id="adminTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link active" id="userListTab" href="/admin" role="tab" aria-controls="userList"
+                        <a class="nav-link active" id="userListTab" href="/api/admin" role="tab"
+                           aria-controls="userList"
                            aria-selected="true">Users table</a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="addUserTab" href="/admin/new" role="tab" aria-controls="addUser"
+                        <a class="nav-link" id="addUserTab" href="/api/admin/new" role="tab" aria-controls="addUser"
                            aria-selected="false">New user</a>
                     </li>
                 </ul>
@@ -136,7 +137,7 @@
                 <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form th:method="POST" th:action="@{/admin/update(id=${user.id})}" th:object="${user}">
+            <form th:method="POST" th:action="@{/api/admin/update(id=${user.id})}" th:object="${user}">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="name" class="form-label">First name</label>
@@ -196,7 +197,7 @@
 
         // Устанавливаем action для формы
         const form = editUserModal.querySelector('form');
-        form.action = `/admin/update?id=${userId}`;
+        form.action = `/api/admin/update?id=${userId}`;
     });
 
 </script>
@@ -265,7 +266,7 @@
 
         // Устанавливаем action для формы
         const form = deleteUserModal.querySelector('form');
-        form.action = `/admin/delete?id=${userId}`;
+        form.action = `/api/admin/delete?id=${userId}`;
     });
 </script>
 
