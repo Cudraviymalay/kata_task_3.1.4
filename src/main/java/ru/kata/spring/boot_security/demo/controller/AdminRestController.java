@@ -8,8 +8,7 @@ import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-import java.security.Principal;
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -23,33 +22,37 @@ public class AdminRestController {
         this.roleService = roleService;
     }
 
-    @GetMapping()
-    public ResponseEntity<Iterable<User>> getUsers(Principal principal) {
+    @GetMapping("/roles")
+    public ResponseEntity<List<Role>> getAllRoles() {
+        return ResponseEntity.ok(roleService.getAllRoles());
+    }
+
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<User> getUser(Principal principal) {
-        return ResponseEntity.ok(userService.oneUser(principal));
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(userService.getOne(id));
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<User> addUser(@RequestBody User user, @RequestParam(value = "role") Set<Role> roles) {
-        userService.save(userService.createUser(user, roles));
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+    @PostMapping("/users")
+    public ResponseEntity<HttpStatus> createUser(@RequestBody User user) {
+        userService.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PostMapping("/update")
-    public ResponseEntity<User> update(@RequestBody User user,
-                                       @RequestParam(value = "role", required = false) Set<Role> roleNames,
-                                       @RequestParam(value = "id") long id) {
-        User updatedUser = userService.update(id, userService.updateUser(id, user, roleNames));
-        return ResponseEntity.ok(updatedUser);
+    @PutMapping("/users/{id}")
+    public ResponseEntity<HttpStatus> updateUser(@PathVariable Long id, @RequestBody User user) {
+        user.setId(id);
+        userService.updateUser(user);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<Void> delete(@RequestParam("id") long id) {
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id) {
         userService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

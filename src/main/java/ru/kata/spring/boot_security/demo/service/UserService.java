@@ -17,9 +17,7 @@ public interface UserService {
 
     User createUser(User user, Set<Role> roles);
 
-    public User update(Long id, User user);
-
-    User updateUser(Long id, User userFromRequest, Set<Role> roles);
+    public void updateUser(User user);
 
     void delete(Long id);
 
