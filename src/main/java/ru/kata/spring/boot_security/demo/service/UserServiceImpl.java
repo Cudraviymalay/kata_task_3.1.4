@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Transactional
     @Override
-    public void update(Long id, User user) {
+    public User update(Long id, User user) {
         User oldUser = userDAO.findById(id).get();
         oldUser.setUsername(user.getUsername());
         oldUser.setSurname(user.getSurname());
@@ -94,6 +94,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         oldUser.setPassword(user.getPassword());
         oldUser.setRoles(user.getRoles());
         userDAO.save(oldUser);
+        return oldUser;
     }
 
     @Transactional
