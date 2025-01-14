@@ -1,211 +1,143 @@
-﻿const url = 'http://localhost:8080/api/admin';
+﻿// Массив для хранения данных пользователей (замените на API-запросы, если данные берутся с сервера)
+const usersData = [
+    {
+        id: 1,
+        username: "admin",
+        surname: "admin",
+        age: 28,
+        email: "admin@mail.ru",
+        roles: ["ADMIN"],
+    },
+    {
+        id: 2,
+        username: "user",
+        surname: "user",
+        age: 25,
+        email: "user@mail.ru",
+        roles: ["USER"],
+    },
+];
 
-async function getRoles() {
-    return await fetch("http://localhost:8080/api/admin/roles").then(response => response.json());
-}
+let currentEditId = null; // ID текущего редактируемого пользователя
 
-function listRoles() {
-    let tmp = '';
-    getRoles().then(roles => roles.forEach(role => {
-        tmp += `<option value="${role.id}">${role.role}</option>`;
-    })).then(r => {
-        console.log('listRoles');
-        document.getElementById('editRole').innerHTML = tmp;
-        document.getElementById('deleteRole').innerHTML = tmp;
-        document.getElementById('role_select').innerHTML = tmp;
+// Функция для отображения пользователей в таблице
+function populateUserTable() {
+    const tableBody = document.getElementById("userTableBody");
+    tableBody.innerHTML = "";
+
+    usersData.forEach((user) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+      <td>${user.id}</td>
+      <td>${user.username}</td>
+      <td>${user.surname}</td>
+      <td>${user.age}</td>
+      <td>${user.email}</td>
+      <td>${user.roles.join(", ")}</td>
+      <td><button class="btn btn-warning" onclick="openEditModal(${user.id})">Edit</button></td>
+      <td><button class="btn btn-danger" onclick="openDeleteModal(${user.id})">Delete</button></td>
+    `;
+
+        tableBody.appendChild(row);
     });
 }
 
-listRoles();
-
-function getUserData() {
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            loadTable(data);
-        });
-}
-
-function getAllUsers() {
-    fetch(url).then(response => response.json()).then(user =>
-        loadTable(user));
-}
-
-function loadTable(listAllUsers) {
-    let res = '';
-    for (let user of listAllUsers) {
-        res +=
-            `<tr>
-                <td>${user.id}</td>
-                <td>${user.userName}</td>
-                <td>${user.email}</td>
-                <td>${user.roles ? user.roles.map(role => " " + role.role.substring(5)) : ""}</td>
-                <td>
-                    <button class="btn btn-info" type="button"
-                    data-bs-toggle="modal" data-bs-target="#editModal"
-                    onclick="editModal(${user.id})">Edit</button></td>
-                <td>
-                    <button class="btn btn-danger" type="button"
-                    data-bs-toggle="modal" data-bs-target="#deleteModal"
-                    onclick="deleteModal(${user.id})">Delete</button></td>
-            </tr>`;
-    }
-    document.getElementById('tableBodyAdmin').innerHTML = res;
-}
-
-getAllUsers();
-
-// Новый юзер
-document.getElementById('newUserForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    let role = document.getElementById('role_select');
-    let rolesAddUser = [];
-    for (let i = 0; i < role.options.length; i++) {
-        if (role.options[i].selected) {
-            rolesAddUser.push({id: role.options[i].value, role: 'ROLE_' + role.options[i].innerHTML});
-        }
-    }
-    fetch(url + '/users', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: JSON.stringify({
-            userName: document.getElementById('newName').value,
-            email: document.getElementById('newEmail').value,
-            password: document.getElementById('newPassword').value,
-            roles: rolesAddUser
-        })
-    })
-        .then((response) => {
-            if (response.ok) {
-                getUserData();
-                document.getElementById("show-users-table").click();
-            }
-        });
-});
-
-//Изменение юзера
-function editModal(id) {
-    fetch(url + '/users/' + id, {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json;charset=UTF-8'
-        }
-    }).then(res => {
-        res.json().then(async u => {
-            document.getElementById('editId').value = u.id;
-            document.getElementById('editNameU').value = u.userName;
-            document.getElementById('editEmail').value = u.email;
-            document.getElementById('editPassword').value = u.password;
-            const allRoles = await getRoles();
-
-            const rolesSelect = document.getElementById('editRole');
-            rolesSelect.innerHTML = '';
-
-            allRoles.forEach(role => {
-                const option = document.createElement('option');
-                option.value = role.id;
-                option.textContent = role.role;
-                option.selected = u.roles && u.roles.some(userRole => userRole.id === role.id);
-                rolesSelect.appendChild(option);
-            });
-        });
-    });
-}
-
-async function editUser() {
-    const rolesSelect = document.getElementById('editRole');
-
-    let idValue = document.getElementById("editId").value;
-    let nameValue = document.getElementById('editNameU').value;
-    let emailValue = document.getElementById('editEmail').value;
-    let passwordValue = document.getElementById("editPassword").value;
-    let listOfRole = [];
-    for (let i = 0; i < rolesSelect.options.length; i++) {
-        if (rolesSelect.options[i].selected) {
-            let tmp = {};
-            tmp["id"] = rolesSelect.options[i].value;
-            listOfRole.push(tmp);
-        }
-    }
-    let user = {
-        id: idValue,
-        userName: nameValue,
-        email: emailValue,
-        password: passwordValue,
-        roles: listOfRole
-    };
-    await fetch(url + '/users/' + user.id, {
-        method: "PUT",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json;charset=UTF-8'
-        },
-        body: JSON.stringify(user)
-    });
-    closeModal();
-    getUserData();
-}
-
-// Удаление юзера
-function deleteModal(id) {
-    fetch(url + '/users/' + id, {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json;charset=UTF-8'
-        }
-    }).then(res => {
-        res.json().then(u => {
-            document.getElementById('deleteId').value = u.id;
-            document.getElementById('deleteNameU').value = u.userName;
-            document.getElementById('deleteEmail').value = u.email;
-            const rolesContainer = document.getElementById('deleteRole');
-            rolesContainer.innerHTML = '';
-            u.roles.forEach(role => {
-                const option = document.createElement('option');
-                option.textContent = role.role;
-                rolesContainer.appendChild(option);
-            });
-        });
-    });
-}
-
-async function deleteUser() {
-    const id = document.getElementById("deleteId").value;
-    console.log(id);
-    let urlDel = url + "/users/" + id;
-    let method = {
-        method: 'DELETE',
-        headers: {
-            "Content-Type": "application/json"
-        }
-    };
-
-    fetch(urlDel, method).then(() => {
-        closeModal();
-        getUserData();
-    });
-}
-
-function closeModal() {
-    document.querySelectorAll(".btn-close").forEach((btn) => btn.click());
-}
-
-function getCurrentUser() {
-    fetch('http://localhost:8080/api/user')
-        .then(res => res.json())
-        .then(user => {
-            document.getElementById('usernamePlaceholder').textContent = user.userName;
-            document.getElementById('userRoles').textContent = user.roles ? user.roles.map(role => role.role.substring(5)).join(', ') : "";
-        });
-}
-
-getCurrentUser();
-
-// Обработка клика  new user
-document.getElementById('show-new-user-form').addEventListener('click', function (event) {
+// Функция для добавления нового пользователя
+function addUser(event) {
     event.preventDefault();
-    var tab = new bootstrap.Tab(this);
-    tab.show();
+
+    const form = document.getElementById("addUserForm");
+    const newUser = {
+        id: usersData.length ? usersData[usersData.length - 1].id + 1 : 1,
+        username: form.username.value,
+        surname: form.surname.value,
+        age: parseInt(form.age.value, 10),
+        email: form.email.value,
+        roles: Array.from(form.roles.selectedOptions).map((option) => option.text),
+    };
+
+    usersData.push(newUser);
+    form.reset();
+    populateUserTable();
+    alert("User added successfully!");
+}
+
+// Функция для открытия модального окна редактирования
+function openEditModal(id) {
+    currentEditId = id;
+    const user = usersData.find((user) => user.id === id);
+
+    if (user) {
+        document.getElementById("editId").value = user.id;
+        document.getElementById("editNameU").value = user.username;
+        document.getElementById("editLastName").value = user.surname;
+        document.getElementById("editAge").value = user.age;
+        document.getElementById("editEmail").value = user.email;
+
+        const roleSelect = document.getElementById("editRole");
+        Array.from(roleSelect.options).forEach((option) => {
+            option.selected = user.roles.includes(option.text);
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById("editModal"));
+        modal.show();
+    }
+}
+
+// Функция для сохранения изменений после редактирования
+function editUser() {
+    const user = usersData.find((user) => user.id === currentEditId);
+
+    if (user) {
+        user.username = document.getElementById("editNameU").value;
+        user.surname = document.getElementById("editLastName").value;
+        user.age = parseInt(document.getElementById("editAge").value, 10);
+        user.email = document.getElementById("editEmail").value;
+        user.roles = Array.from(document.getElementById("editRole").selectedOptions).map((option) => option.text);
+
+        populateUserTable();
+        alert("User updated successfully!");
+    }
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById("editModal"));
+    modal.hide();
+}
+
+// Функция для открытия модального окна удаления
+function openDeleteModal(id) {
+    currentEditId = id;
+    const user = usersData.find((user) => user.id === id);
+
+    if (user) {
+        document.getElementById("deleteUserForm").onsubmit = (event) => {
+            event.preventDefault();
+            deleteUser(id);
+        };
+
+        const modal = new bootstrap.Modal(document.getElementById("deleteUserModal"));
+        modal.show();
+    }
+}
+
+// Функция для удаления пользователя
+function deleteUser(id) {
+    const userIndex = usersData.findIndex((user) => user.id === id);
+
+    if (userIndex !== -1) {
+        usersData.splice(userIndex, 1);
+        populateUserTable();
+        alert("User deleted successfully!");
+    }
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById("deleteUserModal"));
+    modal.hide();
+}
+
+// Обработчик для формы добавления пользователя
+document.getElementById("addUserForm").addEventListener("submit", addUser);
+
+// Инициализация таблицы при загрузке страницы
+document.addEventListener("DOMContentLoaded", () => {
+    populateUserTable();
 });
