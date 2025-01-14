@@ -65,22 +65,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return (User) ((Authentication) principal).getPrincipal();
     }
 
-    @Transactional
     @Override
-    public User createUser(User user, Set<Role> roles) {
+    @Transactional
+    public void createUser(User user) {
+        System.out.println(user.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Set<Role> setOfRoles = roles.stream()
-                .map(role -> {
-                    Role foundRole = roleService.findByName(role.getName());
-                    if (foundRole == null) {
-                        throw new EntityNotFoundException("Role " + role.getName() + " not found");
-                    }
-                    return foundRole;
-                })
-                .collect(Collectors.toSet());
-
-        user.setRoles(setOfRoles);
-        return user;
+        userDAO.save(user);
     }
 
     @Override
