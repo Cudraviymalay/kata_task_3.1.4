@@ -10,8 +10,8 @@ import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -26,43 +26,67 @@ public class AdminRestController {
         this.roleService = roleService;
     }
 
-    @GetMapping
+    // Получение всех пользователей
+    @GetMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
+    // Получение всех ролей
     @GetMapping("/roles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Role>> getAllRoles() {
-        return ResponseEntity.ok(roleService.getAllRoles());
+        List<Role> roles = roleService.getAllRoles();
+        return ResponseEntity.ok(roles);
     }
 
+    // Получение пользователя по ID
     @GetMapping("/users/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userService.getOne(id));
+        Optional<User> user = Optional.ofNullable(userService.getOne(id));
+        return user.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    // Создание нового пользователя
     @PostMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<HttpStatus> createUser(@RequestBody User user) {
-        userService.createUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<String> createUser(@RequestBody User user) {
+        try {
+            userService.createUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create user: " + e.getMessage());
+        }
     }
 
+    // Обновление пользователя
     @PutMapping("/users/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<HttpStatus> updateUser(@PathVariable Long id, @RequestBody User user) {
-        user.setId(id);
-        userService.updateUser(user);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody User user) {
+        Optional<User> existingUser = Optional.ofNullable(userService.getOne(id));
+        if (existingUser.isPresent()) {
+            user.setId(id);
+            userService.updateUser(user);
+            return ResponseEntity.ok("User updated successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
     }
 
+    // Удаление пользователя
     @DeleteMapping("/users/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id) {
-        userService.delete(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> deleteUser(@PathVariable("id") Long id) {
+        Optional<User> existingUser = Optional.ofNullable(userService.getOne(id));
+        if (existingUser.isPresent()) {
+            userService.delete(id);
+            return ResponseEntity.ok("User deleted successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
     }
 }
