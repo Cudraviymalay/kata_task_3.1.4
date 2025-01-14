@@ -23,7 +23,7 @@
             <span class="text-light ms-2">with roles:</span>
             <span id="userRoles"></span>
         </span>
-        <form th:action="@{/logout}" method="post" class="d-inline">
+        <form action="/logout" method="post" class="d-inline">
             <button type="submit" class="btn btn-dark">Logout</button>
         </form>
     </div>
@@ -36,18 +36,17 @@
             <ul class="list-unstyled">
                 <div class="btn-group-vertical" role="group" aria-label="Basic example" style="width: 100%;">
                     <a href="/admin" class="btn btn-light" role="button">Admin</a>
-                    <a href="/user" class="btn btn-primary active" role="button"
-                       style="background-color: #007BFF; border-color: #007BFF;">User</a>
+                    <a href="/user" class="btn btn-primary active" role="button" style="background-color: #007BFF; border-color: #007BFF;">User</a>
                 </div>
             </ul>
         </div>
 
         <div class="col-10">
             <div class="container mt-4">
-                <h1 class="mb-4">User information-page</h1>
+                <h1 class="mb-4">User Information</h1>
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="bg-light card-title">About user</h5>
+                        <h5 class="bg-light card-title">About User</h5>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -57,9 +56,12 @@
                                     <th>Last Name</th>
                                     <th>Age</th>
                                     <th>Email</th>
-                                    <th>Role</th>
+                                    <th>Roles</th>
                                 </tr>
                                 </thead>
+                                <tbody id="userTableBody">
+                                <!-- Данные пользователя будут добавлены через JS -->
+                                </tbody>
                             </table>
                         </div>
                     </div>

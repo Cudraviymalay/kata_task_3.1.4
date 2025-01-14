@@ -1,31 +1,42 @@
-const url = 'http://localhost:8088/api/admin';
+const apiUrl = 'http://localhost:8080/api/user';
 
-async function getCurrentUser() {
-    fetch('http://localhost:8088/api/user')
-        .then(res => res.json())
-        .then(user => {
-            document.getElementById('usernamePlaceholder').textContent = user.username;
-            document.getElementById('userRoles').textContent = user.roles ? user.roles.map(role => role.role.substring(5)).join(', ') : "";
+/**
+ * Получение данных текущего пользователя из API и отображение на странице
+ */
+async function fetchCurrentUser() {
+    try {
+        const response = await fetch(apiUrl);
 
-            // Обновим таблицу с данными пользователя
-            const tableBody = document.getElementById('userTableBody');
-            tableBody.innerHTML = `
-                    <tr>
-                        <td>${user.id}</td>
-                        <td>${user.username}</td>
-                        <td>${user.surname}</td>
-                        <td>${user.age}</td>
-                        <td>${user.email}</td>
-                        <td>${user.roles ? user.roles.map(role => role.role.substring(5)).join(', ') : ''}</td>
-                    </tr>
-                `;
-        });
+        if (!response.ok) {
+            throw new Error(`Ошибка: ${response.status} ${response.statusText}`);
+        }
+
+        const user = await response.json();
+
+        // Отображение имени пользователя и ролей
+        document.getElementById('usernamePlaceholder').textContent = user.username;
+        document.getElementById('userRoles').textContent = user.roles
+            ? user.roles.map(role => role.name.substring(5)).join(', ')
+            : 'No roles';
+
+        // Заполнение таблицы информацией о пользователе
+        const tableBody = document.getElementById('userTableBody');
+        tableBody.innerHTML = `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.surname}</td>
+                <td>${user.age}</td>
+                <td>${user.email}</td>
+                <td>${user.roles ? user.roles.map(role => role.name.substring(5)).join(', ') : 'No roles'}</td>
+            </tr>
+        `;
+    } catch (error) {
+        console.error('Ошибка при получении данных пользователя:', error);
+        document.getElementById('usernamePlaceholder').textContent = 'Error fetching user';
+        document.getElementById('userRoles').textContent = '';
+    }
 }
 
-getCurrentUser(); // Вызов функции для получения данных пользователя
-
-// Инициализация вкладок
-document.addEventListener('DOMContentLoaded', function () {
-    var tab = new bootstrap.Tab(document.querySelector('.nav-link.active'));  // Инициализация активной вкладки
-    tab.show();  // Показ активной вкладки
-});
+// Вызов функции для загрузки данных пользователя при загрузке страницы
+document.addEventListener('DOMContentLoaded', fetchCurrentUser);
